@@ -1,27 +1,14 @@
 package main
 
 import (
+	"fmt"
+	"github.com/dmtobler/go-rcon/rcon"
 	"log"
 	"net"
 )
 
-type Packet struct {
-	Length    int32
-	RequestID int32
-	Kind      int32
-	Payload   string
-}
-
-func (p Packet) toString(b []byte) string {
-	return string(b[:])
-}
-
-//func (p Packet) generateID() int32 {
-//
-//}
-
 func main() {
-
+	// TODO - refactor to future connection file
 	const (
 		HOST = "tobler.games"
 		PORT = "25575"
@@ -35,4 +22,18 @@ func main() {
 	}
 	defer conn.Close()
 
+	// TODO - remove below
+
+	// Write fake login request packet to server
+	b := make([]byte, 64)
+	p := rcon.NewPacket(3, "password")
+	if _, err := conn.Write(p.Serialize()); err != nil {
+		log.Fatalf("%s", err)
+	}
+
+	if _, err := conn.Read(b); err != nil {
+		log.Fatalf("%s", err)
+	}
+
+	fmt.Println(b)
 }
