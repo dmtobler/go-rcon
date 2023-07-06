@@ -12,7 +12,7 @@ type Packet struct {
 	Length    int32
 	RequestID int32
 	Kind      int32
-	Payload   []byte
+	Payload   string
 }
 
 // NewPacket returns a Packet with the user-provided Kind and Payload fields. Length and RequestID are independently
@@ -25,7 +25,7 @@ func NewPacket(kind int32, payload string) Packet {
 		Length:    10 + int32(len(payload)),
 		RequestID: generateID(),
 		Kind:      kind,
-		Payload:   []byte(payload),
+		Payload:   payload,
 	}
 }
 
@@ -55,7 +55,7 @@ func (p *Packet) Serialize() []byte {
 	buf.Write(intBytes)
 
 	// Write the payload to the byte buffer
-	buf.Write(p.Payload)
+	buf.Write([]byte(p.Payload))
 
 	// Write two nil character bytes to the buffer to signify the end of packet
 	buf.Write([]byte{0, 0})
@@ -63,4 +63,12 @@ func (p *Packet) Serialize() []byte {
 	return buf.Bytes()
 }
 
-// TODO - create deserialize func
+// Deserialize returns a Packet representation of the encoded byte stream received from the server.
+func Deserialize(data []byte) Packet {
+	return Packet{
+		Length:    int32(binary.LittleEndian.Uint32(data[0:4])),
+		RequestID: int32(binary.LittleEndian.Uint32(data[4:8])),
+		Kind:      int32(binary.LittleEndian.Uint32(data[8:12])),
+		Payload:   string(data[12 : len(data)-2]),
+	}
+}
